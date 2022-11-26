@@ -3,6 +3,7 @@
 
 # local dev files
 .env*.local
+.env
 
 # production
 /build
