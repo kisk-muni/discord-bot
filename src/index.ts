@@ -1,11 +1,24 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 if (!process.env.DISCORD_BOT_TOKEN) throw new Error("Missing bot token.");
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent,
+  ],
+  partials: [
+    Partials.Message,
+    Partials.Channel,
+    Partials.Reaction,
+    Partials.User,
+  ],
+});
 
 client.on("ready", () => {
   console.log(`Logged in as ${client?.user?.tag}!`);
