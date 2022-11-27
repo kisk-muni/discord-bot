@@ -15,7 +15,7 @@ const tableRecordSchema = z.object({
   id: z.string(),
   created_at: z.string().nullable(),
   title: z.string().nullable(),
-  url: z.string(),
+  url: z.string().nullable(),
   description: z.string().nullable(),
   published_at: z.string().nullable(),
   portfolio_id: z.string(),
