@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import supabase from "./supabase";
 import { stripHtml } from "string-strip-html";
+import { parseISO, sub, isBefore } from "date-fns";
 
 type PortfolioRecord = {
   title?: string;
@@ -59,6 +60,18 @@ export async function handlePostUpdate(
     if (!channel) throw new Error("Posts channel not found.");
 
     if (type === "INSERT" && record) {
+      // skip articles older thay 1 day
+      if (record.published_at) {
+        const publishedAt = parseISO(record.published_at);
+        const dayBefore = sub(new Date(), {
+          days: 1,
+        });
+        if (isBefore(publishedAt, dayBefore)) {
+          res.json({ message: `Skipping old post ${type}.` });
+          return;
+        }
+      }
+
       // discord message prerequisite:
       // get portfolio data
       const { data, error: portfolioError } = await supabase
