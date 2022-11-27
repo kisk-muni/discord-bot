@@ -1,5 +1,8 @@
 import { REST, Routes, Client, GatewayIntentBits, Partials } from "discord.js";
+import bodyParser from "body-parser";
 import dotenv from "dotenv";
+import { handlePostUpdate } from "./send-update";
+import express from "express";
 
 dotenv.config();
 
@@ -7,6 +10,13 @@ if (!process.env.DISCORD_BOT_TOKEN)
   throw new Error("Missing DISCORD_BOT_TOKEN.");
 if (!process.env.DISCORD_APP_CLIENT_ID)
   throw new Error("Missing DISCORD_APP_CLIENT_ID.");
+if (!process.env.SCRAPBOOK_CHANNEL_ID)
+  throw new Error("Missing SCRAPBOOK_CHANNEL_ID.");
+if (!process.env.API_KEY) throw new Error("Missing API_KEY.");
+
+const app = express();
+const port = 3000;
+app.use(bodyParser.json());
 
 const commands = [
   {
@@ -63,3 +73,15 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
+
+app.post("/send", (req, res, next) => handlePostUpdate(req, res, next, client));
+
+app.listen(port, () => {
+  console.log(`App listening on port ${port}`);
+});
+
+// To invoke:
+// curl --request POST \
+//   --url http://localhost:3000/send \
+//   --header 'Content-Type: application/json' \
+//   --data '{"apiKey":"API_KEY","update":{"title":"nazev clanku","url":"https://discord.js.org","description":"popisek","imageUrl":"https://i.imgur.com/AfFp7pu.png","author":{"name":"jmeno prijmeni","url":"https://discord.js.org","imageUrl":"https://i.imgur.com/AfFp7pu.png"}}}'
