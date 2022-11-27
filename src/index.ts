@@ -13,6 +13,9 @@ if (!process.env.DISCORD_APP_CLIENT_ID)
 if (!process.env.SCRAPBOOK_CHANNEL_ID)
   throw new Error("Missing SCRAPBOOK_CHANNEL_ID.");
 if (!process.env.API_KEY) throw new Error("Missing API_KEY.");
+if (!process.env.SUPABASE_ANON_KEY)
+  throw new Error("Missing SUPABASE_ANON_KEY.");
+if (!process.env.SUPABASE_API_URL) throw new Error("Missing SUPABASE_API_URL.");
 
 const app = express();
 const port = 3000;
@@ -74,7 +77,9 @@ client.on("interactionCreate", async (interaction) => {
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-app.post("/send", (req, res, next) => handlePostUpdate(req, res, next, client));
+app.post("/sync-post", (req, res, next) =>
+  handlePostUpdate(req, res, next, client)
+);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
