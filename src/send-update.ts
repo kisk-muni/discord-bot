@@ -15,6 +15,7 @@ const updateSchema = z.object({
 });
 
 const updateBodySchema = z.object({
+  environment: z.string().optional().default("development"),
   update: updateSchema,
   apiKey: z.string(),
 });
@@ -27,12 +28,16 @@ export function handlePostUpdate(
 ) {
   try {
     if (req.method !== "POST") throw new Error("Method not allowed.");
-    const { update, apiKey } = updateBodySchema.parse(req.body);
+    const { update, apiKey, environment } = updateBodySchema.parse(req.body);
     if (apiKey !== process.env.API_KEY)
       throw new Error("Provided API key is invalid.");
+    const channelId =
+      environment == "production"
+        ? process.env.SCRAPBOOK_CHANNEL_ID
+        : process.env.SCRAPBOOK_TEST_CHANNEL_ID;
     const channel = client.channels.cache.get(
       /* eslint-disable  @typescript-eslint/no-non-null-assertion */
-      process.env.SCRAPBOOK_CHANNEL_ID || process.env.SCRAPBOOK_TEST_CHANNEL_ID!
+      channelId!
     ) as TextChannel | undefined;
     if (!channel) throw new Error("Posts channel not found.");
     const embed = new EmbedBuilder()
