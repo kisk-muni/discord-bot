@@ -1,7 +1,4 @@
-import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-
-dotenv.config();
 
 const supabase = createClient(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

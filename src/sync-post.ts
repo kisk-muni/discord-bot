@@ -32,7 +32,7 @@ const payloadSchema = z.object({
   old_record: tableRecordSchema.nullable(),
 });
 
-export async function handlePostUpdate(
+export async function syncPost(
   req: Request,
   res: Response,
   next: NextFunction,
