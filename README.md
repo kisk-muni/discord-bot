@@ -2,15 +2,16 @@
 
 Scrappy is the Discord bot that posts updates from [scrapbook.kisk.cz](https://scrapbook.kisk.cz/) to our Discord community.
 
-## Geting started
-
 Scrappy is powered by [Discord.js](https://discord.js.org/), [Express.js](https://expressjs.com/),
 [Supabase Postgres database](https://supabase.com/) and runs on [Digitalocean’s App Platform](https://www.digitalocean.com/products/app-platform).
 
-Developing Scrappy assumes having a runnning [Scrapbook’s](https://github.com/kisk-muni/scrapbook) Supabase database.
+## Geting started
+
 At this point we develop Scrappy on production database and make sure that all testing is done in private channel,
-so community members don’t notice. Since Scrappy depends on Scrapbook’s database schema, its code may be moved or connected
-to Scrapbook’s repository later on.
+so community members don’t notice.
+
+To get into development, please reach out to @eventually-consistent on our [Discord community](https://discord.com/invite/PGugj3BsE9).
+You will be provided with access to the database and Discord application.
 
 Useful resources:
 
