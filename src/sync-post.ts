@@ -84,7 +84,7 @@ export async function syncPost(
         throw new Error(`Couldnt find portfolio ${record.portfolio_id}`);
       const portfolio = data as PortfolioRecord;
 
-      // send discord message
+      // prepare discord message
       const embed = new EmbedBuilder()
         .setColor(0xfcda0b) // yellow
         .setTitle(record?.title || null)
@@ -94,10 +94,12 @@ export async function syncPost(
           iconURL: portfolio?.image_url,
           url: `https://scrapbook.kisk.cz/portfolio?feed=${portfolio.feed_url}`,
         })
-        .setDescription(
-          record?.description ? stripHtml(record.description).result : null
-        )
         .setImage(record?.thumbnail_url || null);
+      if (record.description) {
+        const plainTextDescription = stripHtml(record.description).result;
+        embed.setDescription(truncate(plainTextDescription));
+      }
+      // send message
       const message = await channel.send({ embeds: [embed] });
 
       // save discord_message_id
@@ -119,4 +121,16 @@ export async function syncPost(
     console.error(error);
     next(error);
   }
+}
+
+function truncate(str: string, maxLength = 300) {
+  if (str.length > maxLength) {
+    let truncatedString = str.substring(0, maxLength);
+    const lastSpaceIndex = truncatedString.lastIndexOf(" ");
+    if (lastSpaceIndex !== -1) {
+      truncatedString = truncatedString.substring(0, lastSpaceIndex);
+    }
+    return truncatedString + "...";
+  }
+  return str;
 }
