@@ -1,7 +1,15 @@
-import { REST, Routes, Client, GatewayIntentBits, Partials } from "discord.js";
+import {
+  REST,
+  Routes,
+  Events,
+  Client,
+  GatewayIntentBits,
+  Partials,
+} from "discord.js";
 import bodyParser from "body-parser";
 import { syncPost } from "./sync-post";
 import express from "express";
+import supabase from "./supabase";
 
 if (!process.env.DISCORD_BOT_TOKEN)
   throw new Error("Missing DISCORD_BOT_TOKEN.");
@@ -9,9 +17,11 @@ if (!process.env.DISCORD_APP_CLIENT_ID)
   throw new Error("Missing DISCORD_APP_CLIENT_ID.");
 if (!process.env.SCRAPBOOK_CHANNEL_ID)
   throw new Error("Missing SCRAPBOOK_CHANNEL_ID.");
+if (!process.env.SCRAPBOOK_TEST_CHANNEL_ID)
+  throw new Error("Missing SCRAPBOOK_TEST_CHANNEL_ID.");
 if (!process.env.API_KEY) throw new Error("Missing API_KEY.");
-if (!process.env.SUPABASE_ANON_KEY)
-  throw new Error("Missing SUPABASE_ANON_KEY.");
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY)
+  throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
 if (!process.env.SUPABASE_API_URL) throw new Error("Missing SUPABASE_API_URL.");
 
 const app = express();
@@ -72,6 +82,73 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+  if (
+    reaction.message.partial &&
+    [
+      process.env.SCRAPBOOK_CHANNEL_ID,
+      process.env.SCRAPBOOK_TEST_CHANNEL_ID,
+    ].includes(reaction.message.channelId)
+  ) {
+    try {
+      await reaction.message.fetch();
+    } catch (error) {
+      console.error("Something went wrong when fetching the message: ", error);
+    }
+  }
+  const { error } = await supabase.from("discord_message_reactions").insert({
+    message_id: reaction.message.id,
+    emoji_name: reaction.emoji.name,
+    discord_user_id: user.id,
+    emoji_id: reaction.emoji.id,
+  });
+  if (error)
+    console.error(
+      `Couldnt insert discord_message_reaction ${reaction.message.id} ${error.message}.`
+    );
+  console.log(
+    `${user.username} with id ${user.id} created "${reaction.emoji.name}" reaction on message ${reaction.message.id}.`
+  );
+});
+
+client.on(Events.MessageReactionRemove, async (reaction, user) => {
+  if (
+    reaction.message.partial &&
+    [
+      process.env.SCRAPBOOK_CHANNEL_ID,
+      process.env.SCRAPBOOK_TEST_CHANNEL_ID,
+    ].includes(reaction.message.channelId)
+  ) {
+    try {
+      await reaction.message.fetch();
+    } catch (error) {
+      console.error("Something went wrong when fetching the message: ", error);
+    }
+  }
+  const match: {
+    message_id: string;
+    emoji_name: string | null;
+    discord_user_id: string;
+    emoji_id?: string;
+  } = {
+    message_id: reaction.message.id,
+    emoji_name: reaction.emoji.name,
+    discord_user_id: user.id,
+  };
+  if (reaction.emoji.id) match.emoji_id = reaction.emoji.id;
+  const { error } = await supabase
+    .from("discord_message_reactions")
+    .delete()
+    .match(match);
+  if (error)
+    console.error(
+      `Couldnt delete discord_message_reaction ${reaction.message.id} ${error.message}.`
+    );
+  console.log(
+    `${user.username} with id ${user.id} removed their "${reaction.emoji.name}" reaction on message ${reaction.message.id}.`
+  );
+});
+
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 app.post("/sync-post", (req, res, next) => syncPost(req, res, next, client));
@@ -79,26 +156,3 @@ app.post("/sync-post", (req, res, next) => syncPost(req, res, next, client));
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });
-
-// To invoke:
-// curl --request POST \
-//   --url 'http://localhost:3000/sync-post?env=development' \
-//   --header 'Authorization: Bearer API_KEY' \
-//   --header 'Content-Type: application/json' \
-//   --data '{
-//     "type": "INSERT",
-//     "table": "portfolio_posts",
-//     "schema": "public",
-//     "record": {
-//        "created_at": "2022-11-20 19:48:24.495018+00",
-//        "title": "Reflexe: Connectivism: A Learning Theory for the Digital Age",
-//        "url": "https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/",
-//        "description": "Siemens, G. (2015). Connectivism: A Learning Theory for the Digital Age: A knowledge learning theory for the digital age? International Journal &#8230; <a class=\"more-link\" href=\"https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/\">Další</a>",
-//        "published_at": "2022-11-22 19:43:05+00",
-//        "id": "d3764265-80a6-4e39-b3e9-dfc75688e577",
-//        "portfolio_id": "e3a6917a-b4f9-4428-b148-fe59444b5f8c",
-//        "thumbnail_url": "",
-//        "discord_message_id": ""
-//      },
-//      "old_record": null
-//    }'
