@@ -37,6 +37,32 @@ cp .env.example .env
 npm run dev
 ```
 
+4. invoke post synchronization
+
+```bash
+curl --request POST \
+  --url 'http://localhost:3000/sync-post?env=development' \
+  --header 'Authorization: Bearer API_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "type": "INSERT",
+    "table": "portfolio_posts",
+    "schema": "public",
+    "record": {
+       "created_at": "2022-11-20 19:48:24.495018+00",
+       "title": "Reflexe: Connectivism: A Learning Theory for the Digital Age",
+       "url": "https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/",
+       "description": "Siemens, G. (2015). Connectivism: A Learning Theory for the Digital Age: A knowledge learning theory for the digital age? International Journal &#8230; <a class=\"more-link\" href=\"https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/\">Další</a>",
+       "published_at": "2022-11-22 19:43:05+00",
+       "id": "d3764265-80a6-4e39-b3e9-dfc75688e577",
+       "portfolio_id": "e3a6917a-b4f9-4428-b148-fe59444b5f8c",
+       "thumbnail_url": "",
+       "discord_message_id": ""
+     },
+     "old_record": null
+   }'
+```
+
 ## Origin of Scrappy
 
 Scrappy is a Discord sibling of Hack Clubs’s Slack bot [Scrappy](https://github.com/hackclub/scrappy).
