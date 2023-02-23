@@ -66,8 +66,6 @@ export const collectOldReactions: ApiPost = async (req, res, next, client) => {
     process.env.SCRAPBOOK_CHANNEL_ID!
   ) as TextChannel | undefined;
   if (!channel) throw new Error("Posts channel not found.");
-  // get all messsages
-  const messageId = "1077973052551335978";
   console.log(
     "Re-collecting reactions including reactions on old messages in #scrapbook channel."
   );
@@ -77,7 +75,7 @@ export const collectOldReactions: ApiPost = async (req, res, next, client) => {
     emoji_id: string | null;
     discord_user_id: string;
   };
-  //const reactions: ReactionEntry[] = [];
+  // get portfolio posts embedded in discord
   const { data: posts, error } = await supabase
     .from("portfolio_posts")
     .select("discord_message_id")
@@ -87,6 +85,7 @@ export const collectOldReactions: ApiPost = async (req, res, next, client) => {
     return;
   }
   const reactionsByMessage: ReactionEntry[][] = [];
+  // the dirty part of gathering messsage reactions and user info
   for (let i = 0; i <= posts.length - 1; i++) {
     let messageReactions: ReactionEntry[] = [];
     try {
@@ -117,13 +116,14 @@ export const collectOldReactions: ApiPost = async (req, res, next, client) => {
     reactionsByMessage.push(messageReactions);
   }
   const reactions = reactionsByMessage.flat(1);
-  const { error: upsertError } = await supabase
+  const { data, error: upsertError } = await supabase
     .from("discord_message_reactions")
-    .upsert(reactions, { ignoreDuplicates: true });
-  if (upsertError) {
+    .upsert(reactions, { ignoreDuplicates: true })
+    .select("id");
+  if (!data || upsertError) {
     console.log(`Error upserting reactions ${upsertError.message}.`);
   }
-  res.json({ message: `Collected ${reactions.length} reactions.` });
+  res.json({ message: `Collected ${data?.length} reactions.` });
 };
 
 function inScrapbookChannel(message: Message | PartialMessage) {
