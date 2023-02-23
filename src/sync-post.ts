@@ -32,12 +32,12 @@ const payloadSchema = z.object({
   old_record: tableRecordSchema.nullable(),
 });
 
-export async function syncPost(
+export const syncPost = async (
   req: Request,
   res: Response,
   next: NextFunction,
   client: Client
-) {
+) => {
   try {
     // check auth
     const apiKey = req?.headers?.authorization?.substring("Bearer ".length);
@@ -121,7 +121,7 @@ export async function syncPost(
     console.error(error);
     next(error);
   }
-}
+};
 
 function truncate(str: string, maxLength = 300) {
   if (str.length > maxLength) {

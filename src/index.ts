@@ -5,11 +5,16 @@ import {
   Client,
   GatewayIntentBits,
   Partials,
+  User,
 } from "discord.js";
 import bodyParser from "body-parser";
 import { syncPost } from "./sync-post";
 import express from "express";
-import supabase from "./supabase";
+import {
+  collectOldReactions,
+  onReactionAdd,
+  onReactionRemove,
+} from "./collect-reactions";
 
 if (!process.env.DISCORD_BOT_TOKEN)
   throw new Error("Missing DISCORD_BOT_TOKEN.");
@@ -42,13 +47,11 @@ const rest = new REST({ version: "10" }).setToken(
 (async () => {
   try {
     console.log("Started refreshing application (/) commands.");
-
     await rest.put(
       /* eslint-disable  @typescript-eslint/no-non-null-assertion */
       Routes.applicationCommands(process.env.DISCORD_APP_CLIENT_ID!),
       { body: commands }
     );
-
     console.log("Successfully reloaded application (/) commands.");
   } catch (error) {
     console.error(error);
@@ -83,75 +86,67 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
-  if (
-    reaction.message.partial &&
-    [
-      process.env.SCRAPBOOK_CHANNEL_ID,
-      process.env.SCRAPBOOK_TEST_CHANNEL_ID,
-    ].includes(reaction.message.channelId)
-  ) {
+  if (user.partial) {
+    try {
+      await user.fetch();
+    } catch (error) {
+      console.log("Error while trying to fetch an user", error);
+    }
+  }
+
+  if (reaction.message.partial) {
     try {
       await reaction.message.fetch();
     } catch (error) {
-      console.error("Something went wrong when fetching the message: ", error);
+      console.log("Error while trying to fetch a reaction message", error);
     }
   }
-  const { error } = await supabase.from("discord_message_reactions").insert({
-    message_id: reaction.message.id,
-    emoji_name: reaction.emoji.name,
-    discord_user_id: user.id,
-    emoji_id: reaction.emoji.id,
-  });
-  if (error)
-    console.error(
-      `Couldnt insert discord_message_reaction ${reaction.message.id} ${error.message}.`
-    );
-  console.log(
-    `${user.username} with id ${user.id} created "${reaction.emoji.name}" reaction on message ${reaction.message.id}.`
-  );
+  if (reaction.partial) {
+    try {
+      const fetchedReaction = await reaction.fetch();
+      onReactionAdd?.(client, fetchedReaction, user as User);
+    } catch (error) {
+      console.log("Error while trying to fetch a reaction", error);
+    }
+  } else {
+    onReactionAdd?.(client, reaction, user as User);
+  }
 });
 
 client.on(Events.MessageReactionRemove, async (reaction, user) => {
-  if (
-    reaction.message.partial &&
-    [
-      process.env.SCRAPBOOK_CHANNEL_ID,
-      process.env.SCRAPBOOK_TEST_CHANNEL_ID,
-    ].includes(reaction.message.channelId)
-  ) {
+  if (user.partial) {
+    try {
+      await user.fetch();
+    } catch (error) {
+      console.log("Error while trying to fetch an user", error);
+    }
+  }
+
+  if (reaction.message.partial) {
     try {
       await reaction.message.fetch();
     } catch (error) {
-      console.error("Something went wrong when fetching the message: ", error);
+      console.log("Error while trying to fetch a reaction message", error);
     }
   }
-  const match: {
-    message_id: string;
-    emoji_name: string | null;
-    discord_user_id: string;
-    emoji_id?: string;
-  } = {
-    message_id: reaction.message.id,
-    emoji_name: reaction.emoji.name,
-    discord_user_id: user.id,
-  };
-  if (reaction.emoji.id) match.emoji_id = reaction.emoji.id;
-  const { error } = await supabase
-    .from("discord_message_reactions")
-    .delete()
-    .match(match);
-  if (error)
-    console.error(
-      `Couldnt delete discord_message_reaction ${reaction.message.id} ${error.message}.`
-    );
-  console.log(
-    `${user.username} with id ${user.id} removed their "${reaction.emoji.name}" reaction on message ${reaction.message.id}.`
-  );
+  if (reaction.partial) {
+    try {
+      const fetchedReaction = await reaction.fetch();
+      onReactionRemove?.(client, fetchedReaction, user as User);
+    } catch (error) {
+      console.log("Error while trying to fetch a reaction", error);
+    }
+  } else {
+    onReactionRemove?.(client, reaction, user as User);
+  }
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 app.post("/sync-post", (req, res, next) => syncPost(req, res, next, client));
+app.post("/collect-old-reactions", (req, res, next) =>
+  collectOldReactions(req, res, next, client)
+);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);

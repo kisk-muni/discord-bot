@@ -37,7 +37,9 @@ cp .env.example .env
 npm run dev
 ```
 
-4. invoke post synchronization
+## Useful snippets
+
+invoke post synchronization
 
 ```bash
 curl --request POST \
@@ -61,6 +63,15 @@ curl --request POST \
      },
      "old_record": null
    }'
+```
+
+re-collect message reactions in scrapbook channel
+
+```bash
+curl --request POST \
+  --url 'http://localhost:3000/collect-old-reactions' \
+  --header 'Authorization: Bearer API_KEY' \
+  --header 'Content-Type: application/json'
 ```
 
 ## Origin of Scrappy
