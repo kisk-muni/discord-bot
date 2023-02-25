@@ -1,7 +1,13 @@
-import { EmbedBuilder, TextChannel, Client } from "discord.js";
+import {
+  EmbedBuilder,
+  TextChannel,
+  Client,
+  ThreadAutoArchiveDuration,
+} from "discord.js";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import supabase from "./supabase";
+import openai from "./openai";
 import { stripHtml } from "string-strip-html";
 import { parseISO, sub, isBefore } from "date-fns";
 
@@ -111,6 +117,34 @@ export const syncPost = async (
         console.log(
           `Updating discord_message_id on portfolio_post ${record.id} has failed.`
         );
+
+      const thread = await message.startThread({
+        name: record?.title || "Vlákno beze jména",
+        autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+        reason: "Diskuze a zpětná vazba k příspěveku.",
+      });
+      console.log(`Created thread: ${thread.name}`);
+      const prompt =
+        "Napište doplňující otázku pro autora studentského textu. Otázka bude:\n- vtipná\n- nečekaná.\nNásleduje studentský text:\n\n" +
+        record.title +
+        "\n\n" +
+        record.description;
+
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: prompt,
+        temperature: 0,
+        max_tokens: 256,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+
+      if (response.status === 200 && response.data.choices[0].text) {
+        await thread.send(response.data.choices[0].text);
+      } else {
+        console.log("Couldnt fetch openai response.");
+      }
 
       res.json({ message: "The update was successfully posted to discord." });
       return;

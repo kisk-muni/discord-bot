@@ -55,9 +55,9 @@ curl --request POST \
        "title": "Reflexe: Connectivism: A Learning Theory for the Digital Age",
        "url": "https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/",
        "description": "Siemens, G. (2015). Connectivism: A Learning Theory for the Digital Age: A knowledge learning theory for the digital age? International Journal &#8230; <a class=\"more-link\" href=\"https://daliborcernocky.wordpress.com/2020/11/22/reflexe-connectivism-a-learning-theory-for-the-digital-age/\">Další</a>",
-       "published_at": "2022-11-22 19:43:05+00",
-       "id": "d3764265-80a6-4e39-b3e9-dfc75688e577",
-       "portfolio_id": "e3a6917a-b4f9-4428-b148-fe59444b5f8c",
+       "published_at": "2023-02-25 19:43:05+00",
+       "id": "non-existing-id",
+       "portfolio_id": "bc1cf22a-f2d9-4bcd-8e44-f3286f33b40d",
        "thumbnail_url": "",
        "discord_message_id": ""
      },

@@ -28,6 +28,7 @@ if (!process.env.API_KEY) throw new Error("Missing API_KEY.");
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY)
   throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
 if (!process.env.SUPABASE_API_URL) throw new Error("Missing SUPABASE_API_URL.");
+if (!process.env.OPENAI_API_KEY) throw new Error("Missing OPENAI_API_KEY.");
 
 const app = express();
 const port = 3000;

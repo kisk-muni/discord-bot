@@ -57,3 +57,20 @@ const response = await openai.createCompletion({
   stop: ["\n"],
 });
 ```
+
+debug
+
+```bash
+curl https://api.openai.com/v1/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer OPENAI_API_KEY" \
+  -d '{
+  "model": "text-davinci-003",
+  "prompt": "Vytvořte doplňující otázku k textu, která bude vtipná, překvapující. Následuje studentský text. \n\nReflexe předmětu Informační gramotnost\n\nDíky předmětu jsem více pronikla do problematiky informační gramotnosti, jejího vývoje a pojetí konceptu v různých aplikačních oblastech (např. školní prostředí, profesní vzdělávání a volnočasové vzdělávání). Pojetí informační gramotnosti jsem srovnávala s dalšími souvisejícími koncepty, které byly vyvíjeny souběžně. Získala jsem také přehled o aktuálních zahraničních i tuzemských výzkumech zkoumající informační gramotnost. Hlouběji jsem pronikla &#8230; <a href=\"https://lvecerovaportfolio.wordpress.com/2023/01/14/reflexe-predmetu-informacni-gramotnost/\" class=\"more-link\">Pokračovat ve čtení <span class=\"screen-reader-text\">Reflexe předmětu Informační&#160;gramotnost</span> <span class=\"meta-nav\">&#8594;</span></a>",
+  "temperature": 0.7,
+  "max_tokens": 256,
+  "top_p": 1,
+  "frequency_penalty": 0,
+  "presence_penalty": 0
+}'
+```
