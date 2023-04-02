@@ -134,7 +134,7 @@ export const syncPost = async (
       });
       console.log(`Created thread: ${thread.name}`);
       const prompt =
-        "Napište doplňující reakci pro autora studentského textu. Může se jednat o nečekanou otázku nebo o vtipný komentář o délce úměrné studentskému textu. Snažte se vyrovat reakcím, které jsou příliš běžné nebo obecné. Pokuste se uvést konkrétní příklady nebo vlastní názory.\n\n" +
+        "Napište nečekanou či vtipnou reakci pro autora studentského textu. Snažte se vyvarovat reakcím, které jsou příliš běžné a obecné. Abstraktní části vždy doplňujte konkrétními případy. Pokuste se pracovat s názorovou složkou, odkazovat na konkrétní pasáže textu, pokládat otázky pro zamyšlení a vylepšení textu a navazovat na původní text. Svou rekaci doplňte krátkým vtipem.\n\n" +
         "Autor: " +
         portfolio.title +
         "\n" +
@@ -144,8 +144,8 @@ export const syncPost = async (
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
-        temperature: 0.8,
-        max_tokens: 256,
+        temperature: 0.9,
+        max_tokens: 1942,
         top_p: 1,
         frequency_penalty: 1,
         presence_penalty: 1,
