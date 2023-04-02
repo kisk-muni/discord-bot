@@ -16,6 +16,7 @@ type PortfolioRecord = {
   url?: string;
   feed_url?: string;
   image_url?: string;
+  is_public: boolean;
 };
 
 const tableRecordSchema = z.object({
@@ -47,8 +48,10 @@ export const syncPost = async (
   try {
     // check auth
     const apiKey = req?.headers?.authorization?.substring("Bearer ".length);
-    if (apiKey !== process.env.API_KEY)
-      throw new Error("Provided API key is invalid.");
+    if (apiKey !== process.env.API_KEY) {
+      res.status(500).json({ message: `API_KEY not found.` });
+      return;
+    }
 
     // parse supabase webhook payload
     // info: https://supabase.com/docs/guides/database/webhooks#payload
@@ -63,7 +66,10 @@ export const syncPost = async (
       /* eslint-disable  @typescript-eslint/no-non-null-assertion */
       channelId!
     ) as TextChannel | undefined;
-    if (!channel) throw new Error("Posts channel not found.");
+    if (!channel) {
+      res.status(500).json({ message: `Posts channel not found.` });
+      return;
+    }
 
     if (type === "INSERT" && record) {
       // skip articles older thay 1 day
@@ -89,7 +95,10 @@ export const syncPost = async (
       if (portfolioError)
         throw new Error(`Couldnt find portfolio ${record.portfolio_id}`);
       const portfolio = data as PortfolioRecord;
-
+      if (!portfolio.is_public) {
+        res.json({ message: `Portfolio is not public.` });
+        return;
+      }
       // prepare discord message
       const embed = new EmbedBuilder()
         .setColor(0xfcda0b) // yellow
