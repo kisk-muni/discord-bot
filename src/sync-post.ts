@@ -134,19 +134,21 @@ export const syncPost = async (
       });
       console.log(`Created thread: ${thread.name}`);
       const prompt =
-        "Napište doplňující otázku pro autora studentského textu. Otázka bude:\n- vtipná\n- nečekaná.\nNásleduje studentský text:\n\n" +
-        record.title +
-        "\n\n" +
-        record.description;
+        "Napište doplňující reakci pro autora studentského textu. Může se jednat o nečekanou otázku nebo o vtipný komentář o délce úměrné studentskému textu. Snažte se vyrovat reakcím, které jsou příliš běžné nebo obecné. Pokuste se uvést konkrétní příklady nebo vlastní názory.\n\n" +
+        "Autor: " +
+        portfolio.title +
+        "\n" +
+        "URL studentského textu: " +
+        record.url;
 
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
-        temperature: 0,
+        temperature: 0.8,
         max_tokens: 256,
         top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
+        frequency_penalty: 1,
+        presence_penalty: 1,
       });
 
       if (response.status === 200 && response.data.choices[0].text) {
