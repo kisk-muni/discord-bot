@@ -15,6 +15,7 @@ import {
   onReactionAdd,
   onReactionRemove,
 } from "./collect-reactions";
+import { postMessage } from "./post-message";
 
 if (!process.env.DISCORD_BOT_TOKEN)
   throw new Error("Missing DISCORD_BOT_TOKEN.");
@@ -147,6 +148,9 @@ client.login(process.env.DISCORD_BOT_TOKEN);
 app.post("/sync-post", (req, res, next) => syncPost(req, res, next, client));
 app.post("/collect-old-reactions", (req, res, next) =>
   collectOldReactions(req, res, next, client)
+);
+app.post("/post-message", (req, res, next) =>
+  postMessage(req, res, next, client)
 );
 
 app.listen(port, () => {
