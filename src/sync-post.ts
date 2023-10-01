@@ -144,7 +144,7 @@ export const syncPost = async (
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
-        temperature: 0.9,
+        temperature: 0.6,
         max_tokens: 1942,
         top_p: 1,
         frequency_penalty: 1,
